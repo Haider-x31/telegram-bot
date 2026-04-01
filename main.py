@@ -1,30 +1,38 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
 import os
 import asyncio
+import threading
 from flask import Flask
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
 
+# 🔑 التوكن من Environment
 TOKEN = os.getenv("BOT_TOKEN")
 
+# 🌐 Flask
 app_flask = Flask(__name__)
 
-@app_flask.route('/')
+@app_flask.route("/")
 def home():
     return "Bot is running 🔥"
 
+# 🤖 أوامر البوت
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔥 البوت شغال 24 ساعة!")
 
+# 🚀 تشغيل البوت
 async def run_bot():
-    application = Application.builder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
     print("BOT STARTED 🔥")
-    await application.run_polling()
+    await app.run_polling()
 
-def run_flask():
-    app_flask.run(host="0.0.0.0", port=10000)
+# 🔁 تشغيل البوت بثريد منفصل
+def start_bot():
+    asyncio.run(run_bot())
 
+# 🏁 التشغيل
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(run_bot())
-    run_flask()
+    t = threading.Thread(target=start_bot)
+    t.start()
+
+    app_flask.run(host="0.0.0.0", port=10000)
