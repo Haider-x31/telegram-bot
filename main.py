@@ -1,6 +1,5 @@
 import os
 import asyncio
-import threading
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -16,7 +15,7 @@ def home():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔥 البوت شغال 24 ساعة!")
 
-async def run_bot():
+async def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
 
@@ -25,14 +24,9 @@ async def run_bot():
     await app.initialize()
     await app.start()
 
-    while True:
-        await asyncio.sleep(10)
-
-def start_bot():
-    asyncio.run(run_bot())
+    # تشغيل Flask داخل asyncio
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, lambda: app_flask.run(host="0.0.0.0", port=10000))
 
 if __name__ == "__main__":
-    t = threading.Thread(target=start_bot)
-    t.start()
-
-    app_flask.run(host="0.0.0.0", port=10000)
+    asyncio.run(main())
